@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weather Now</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #1e3c72, #2a5298, #0b1220);
+      color: #f9fafb;
+      padding: 20px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 900px;
+      background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,64,175,0.9));
+      border-radius: 26px;
+      padding: 24px;
+      box-shadow:
+        0 24px 60px rgba(15,23,42,0.7),
+        0 0 0 1px rgba(148,163,184,0.15);
+      backdrop-filter: blur(18px);
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 12px;
+      background: conic-gradient(from 180deg, #4ade80, #22d3ee, #6366f1, #a855f7, #4ade80);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 18px rgba(56,189,248,0.7);
+    }
+
+    .logo-icon span {
+      font-size: 18px;
+    }
+
+    .logo-text {
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      font-size: 18px;
+      text-transform: uppercase;
+    }
+
+    .tagline {
+      font-size: 12px;
+      color: #cbd5f5;
+      opacity: 0.9;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .search-bar input {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      background: rgba(15,23,42,0.8);
+      color: #e5e7eb;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .search-bar input::placeholder {
+      color: #9ca3af;
+    }
+
+    .search-bar input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.5);
+      background: rgba(15,23,42,0.95);
+    }
+
+    .search-bar button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 22px;
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+      color: #0b1120;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 10px 25px rgba(59,130,246,0.6);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+      white-space: nowrap;
+    }
+
+    .search-bar button:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 14px 32px rgba(37,99,235,0.7);
+      transform: translateY(-1px);
+    }
+
+    .search-bar button:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 16px rgba(37,99,235,0.5);
+    }
+
+    .search-bar button span {
+      font-size: 16px;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1.35fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 800px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+      .app {
+        padding: 18px;
+        border-radius: 22px;
+      }
+    }
+
+    .card {
+      border-radius: 22px;
+      padding: 16px 18px;
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.13), transparent 55%),
+                  radial-gradient(circle at bottom right, rgba(59,130,246,0.15), transparent 60%),
+                  rgba(15,23,42,0.9);
+      border: 1px solid rgba(148,163,184,0.3);
+      box-shadow: 0 14px 30px rgba(15,23,42,0.6);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9ca3af;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: #a5b4fc;
+    }
+
+    .main-weather {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .temperature {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .temp-value {
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 0.9;
+    }
+
+    .temp-unit {
+      font-size: 18px;
+      color: #9ca3af;
+      margin-top: 10px;
+    }
+
+    .location-time {
+      margin-top: 4px;
+      font-size: 13px;
+      color: #e5e7eb;
+    }
+
+    .condition {
+      font-size: 16px;
+      font-weight: 500;
+      margin-top: 4px;
+    }
+
+    .weather-icon {
+      width: 80px;
+      height: 80px;
+      filter: drop-shadow(0 10px 16px rgba(15,23,42,0.9));
+    }
+
+    .meta {
+      display: flex;
+      gap: 14px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+      font-size: 13px;
+    }
+
+    .meta-item {
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.85);
+      border: 1px solid rgba(55,65,81,0.8);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #e5e7eb;
+    }
+
+    .meta-label {
+      color: #9ca3af;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+
+    .side-grid {
+      display: grid;
+      grid-template-rows: auto auto;
+      gap: 12px;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .pill {
+      padding: 8px 10px;
+      border-radius: 16px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(75,85,99,0.9);
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .pill-label {
+      font-size: 11px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .pill-value {
+      font-weight: 500;
+      color: #e5e7eb;
+    }
+
+    .status-bar {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 14px rgba(34,197,94,0.9);
+    }
+
+    .status-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .aqi-chip {
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(22,163,74,0.15);
+      border: 1px solid rgba(22,163,74,0.7);
+      color: #bbf7d0;
+    }
+
+    .error {
+      margin-top: 8px;
+      color: #fecaca;
+      font-size: 13px;
+      display: none;
+    }
+
+    .loading {
+      font-size: 13px;
+      color: #c4defe;
+      display: none;
+    }
+
+    .chip-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.85);
+      border: 1px solid rgba(55,65,81,0.9);
+      font-size: 11px;
+      color: #cbd5f5;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      font-size: 11px;
+      color: #9ca3af;
+      text-align: right;
+      opacity: 0.9;
+    }
+
+    .footer-note span {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div>
+        <div class="logo">
+          <div class="logo-icon">
+            <span>☁</span>
+          </div>
+          <div>
+            <div class="logo-text">Weather Now</div>
+            <div class="tagline">Live weather & air quality</div>
+          </div>
+        </div>
+      </div>
+      <div class="tagline">
+        Created by Ayush
+      </div>
+    </header>
+
+    <div class="search-bar">
+      <input id="city-input" type="text" placeholder="Search city, pincode, or coordinates (e.g. London, 452001, 40.7,-74.0)" />
+      <button id="search-btn">
+        <span>🔍</span>
+        Check Weather
+      </button>
+    </div>
+    <div class="loading" id="loading-text">Fetching latest conditions...</div>
+    <div class="error" id="error-text"></div>
+
+    <div class="content" id="content" style="display:none;">
+      <!-- Left: main weather -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Current conditions</div>
+            <div class="card-subtitle" id="country-region"></div>
+          </div>
+          <div class="chip-group">
+            <span class="chip" id="feelslike-chip"></span>
+            <span class="chip" id="updated-time"></span>
+          </div>
+        </div>
+
+        <div class="main-weather">
+          <div>
+            <div class="temperature">
+              <span class="temp-value" id="temp-value">--</span>
+              <span class="temp-unit">°C</span>
+            </div>
+            <div class="condition" id="condition-text">—</div>
+            <div class="location-time" id="location-text"></div>
+          </div>
+          <div>
+            <img id="weather-icon" class="weather-icon" alt="Weather icon" />
+          </div>
+        </div>
+
+        <div class="meta">
+          <div class="meta-item">
+            <div>
+              <div class="meta-label">Wind</div>
+              <div id="wind-text"></div>
+            </div>
+          </div>
+          <div class="meta-item">
+            <div>
+              <div class="meta-label">Humidity</div>
+              <div id="humidity-text"></div>
+            </div>
+          </div>
+          <div class="meta-item">
+            <div>
+              <div class="meta-label">Cloud cover</div>
+              <div id="cloud-text"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: extra details -->
+      <section class="side-grid">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Air quality index</div>
+              <div class="card-subtitle">PM2.5 · PM10 · NO₂ · O₃</div>
+            </div>
+          </div>
+
+          <div class="mini-grid">
+            <div class="pill">
+              <span class="pill-label">AQI (US EPA)</span>
+              <span class="pill-value" id="aqi-us">—</span>
+            </div>
+            <div class="pill">
+              <span class="pill-label">PM2.5</span>
+              <span class="pill-value" id="pm25">—</span>
+            </div>
+            <div class="pill">
+              <span class="pill-label">PM10</span>
+              <span class="pill-value" id="pm10">—</span>
+            </div>
+            <div class="pill">
+              <span class="pill-label">O₃</span>
+              <span class="pill-value" id="o3">—</span>
+            </div>
+          </div>
+
+          <div class="status-bar">
+            <div class="status-text">
+              <span class="status-dot" id="aqi-dot"></span>
+              <span id="aqi-message">Air quality status</span>
+            </div>
+            <span class="aqi-chip" id="aqi-label">—</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Atmosphere</div>
+              <div class="card-subtitle">Pressure · UV index · Visibility</div>
+            </div>
+          </div>
+          <div class="mini-grid">
+            <div class="pill">
+              <span class="pill-label">Pressure</span>
+              <span class="pill-value" id="pressure">—</span>
+            </div>
+            <div class="pill">
+              <span class="pill-label">UV index</span>
+              <span class="pill-value" id="uv">—</span>
+            </div>
+            <div class="pill">
+              <span class="pill-label">Visibility</span>
+              <span class="pill-value" id="vis">—</span>
+            </div>
+            <div class="pill">
+              <span class="pill-label">Wind gust</span>
+              <span class="pill-value" id="gust">—</span>
+            </div>
+          </div>
+          <div class="footer-note">
+            Last updated by <span>WeatherAPI</span>.
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const apiKey = "449b740e112a4842bb970954252611"; // your key
+    const baseUrl = "https://api.weatherapi.com/v1/current.json";
+
+    const cityInput = document.getElementById("city-input");
+    const searchBtn = document.getElementById("search-btn");
+    const errorText = document.getElementById("error-text");
+    const loadingText = document.getElementById("loading-text");
+    const content = document.getElementById("content");
+
+    function setLoading(isLoading) {
+      loadingText.style.display = isLoading ? "block" : "none";
+      searchBtn.disabled = isLoading;
+      searchBtn.style.opacity = isLoading ? "0.7" : "1";
+    }
+
+    function showError(message) {
+      errorText.textContent = message;
+      errorText.style.display = "block";
+    }
+
+    function clearError() {
+      errorText.textContent = "";
+      errorText.style.display = "none";
+    }
+
+    function mapAqiToLabel(aqi) {
+      if (aqi == null) return { label: "Unknown", color: "#9ca3af", bg: "rgba(148,163,184,0.2)" };
+      if (aqi <= 50) return { label: "Good", color: "#22c55e", bg: "rgba(22,163,74,0.2)" };
+      if (aqi <= 100) return { label: "Moderate", color: "#eab308", bg: "rgba(234,179,8,0.2)" };
+      if (aqi <= 150) return { label: "Unhealthy (Sensitive)", color: "#f97316", bg: "rgba(249,115,22,0.2)" };
+      if (aqi <= 200) return { label: "Unhealthy", color: "#ef4444", bg: "rgba(239,68,68,0.2)" };
+      if (aqi <= 300) return { label: "Very Unhealthy", color: "#a855f7", bg: "rgba(168,85,247,0.2)" };
+      return { label: "Hazardous", color: "#7f1d1d", bg: "rgba(127,29,29,0.25)" };
+    }
+
+    async function fetchWeather(query) {
+      const url = `${baseUrl}?key=${apiKey}&q=${encodeURIComponent(query)}&aqi=yes`;
+      setLoading(true);
+      clearError();
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error("City not found or API error");
+        }
+        const data = await res.json();
+        updateUI(data);
+      } catch (err) {
+        console.error(err);
+        showError(err.message === "City not found or API error"
+          ? "Unable to find this location. Try another city or check spelling."
+          : "Something went wrong. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function updateUI(data) {
+      content.style.display = "grid";
+
+      const { location, current } = data;
+
+      document.getElementById("temp-value").textContent = Math.round(current.temp_c);
+      document.getElementById("condition-text").textContent = current.condition.text;
+      document.getElementById("location-text").textContent =
+        `${location.name}, ${location.region || location.country}`;
+      document.getElementById("country-region").textContent =
+        `${location.country} • Local time ${location.localtime.split(" ")[1]}`;
+
+      const iconUrl = "https:" + current.condition.icon;
+      const iconEl = document.getElementById("weather-icon");
+      iconEl.src = iconUrl;
+      iconEl.alt = current.condition.text;
+
+      document.getElementById("wind-text").textContent =
+        `${current.wind_kph} km/h ${current.wind_dir}`;
+      document.getElementById("humidity-text").textContent =
+        `${current.humidity}%`;
+      document.getElementById("cloud-text").textContent =
+        `${current.cloud}% cloud cover`;
+
+      document.getElementById("feelslike-chip").textContent =
+        `Feels like ${Math.round(current.feelslike_c)}°C`;
+      document.getElementById("updated-time").textContent =
+        `Updated ${current.last_updated.split(" ")[1]}`;
+
+      document.getElementById("pressure").textContent =
+        `${current.pressure_mb} hPa`;
+      document.getElementById("uv").textContent =
+        current.uv != null ? current.uv.toFixed(1) : "—";
+      document.getElementById("vis").textContent =
+        `${current.vis_km} km`;
+      document.getElementById("gust").textContent =
+        `${current.gust_kph} km/h`;
+
+      if (current.air_quality) {
+        const aqiUs = current.air_quality["us-epa-index"] || null;
+        document.getElementById("aqi-us").textContent = aqiUs ? `${aqiUs}` : "—";
+        document.getElementById("pm25").textContent =
+          current.air_quality.pm2_5 != null ? `${current.air_quality.pm2_5.toFixed(1)} µg/m³` : "—";
+        document.getElementById("pm10").textContent =
+          current.air_quality.pm10 != null ? `${current.air_quality.pm10.toFixed(1)} µg/m³` : "—";
+        document.getElementById("o3").textContent =
+          current.air_quality.o3 != null ? `${current.air_quality.o3.toFixed(1)} µg/m³` : "—";
+
+        // WeatherAPI us-epa-index is 1–6, map to approximate AQI bands
+        const aqiApprox = aqiUs ? aqiUs * 50 : null;
+        const { label, color, bg } = mapAqiToLabel(aqiApprox);
+
+        const aqiChip = document.getElementById("aqi-label");
+        const aqiDot = document.getElementById("aqi-dot");
+        const aqiMsg = document.getElementById("aqi-message");
+
+        aqiChip.textContent = label;
+        aqiChip.style.color = color;
+        aqiChip.style.borderColor = color;
+        aqiChip.style.backgroundColor = bg;
+
+        aqiDot.style.backgroundColor = color;
+        aqiDot.style.boxShadow = `0 0 16px ${color}80`;
+
+        aqiMsg.textContent =
+          aqiApprox ? `Air quality is ${label.toLowerCase()} (${Math.round(aqiApprox)} AQI est.)` :
+          "Air quality data not available";
+      } else {
+        document.getElementById("aqi-us").textContent = "—";
+        document.getElementById("pm25").textContent = "—";
+        document.getElementById("pm10").textContent = "—";
+        document.getElementById("o3").textContent = "—";
+      }
+    }
+
+    searchBtn.addEventListener("click", () => {
+      const value = cityInput.value.trim();
+      if (!value) {
+        showError("Please enter a city, pincode, or coordinates.");
+        return;
+      }
+      fetchWeather(value);
+    });
+
+    cityInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        searchBtn.click();
+      }
+    });
+
+    // Load default city on first open
+    window.addEventListener("load", () => {
+      cityInput.value = "London";
+      fetchWeather("London");
+    });
+  </script>
+</body>
+</html>
